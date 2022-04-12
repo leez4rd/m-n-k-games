@@ -29,18 +29,19 @@ m = 3
 n = 3
 Amoves = []
 Bmoves = []
-gameboard = [[False]*m, [False]*n]
-#{
-	#find a way to structure this 
-#}
+gameboard = [[False]*m]*n
+print(gameboard)
+
 
 Asturn = True
 game = True 
 
+#issue: setting every array at same time
 while(game):
 	move = list(map(int, input("Enter a set of coordinates separated by a comma: ").split(',')))
+	print(gameboard)
 	#if space is open...
-	if (gameboard[move[0] + move[1]]):
+	if (gameboard[move[0]][move[1]] == False):
 		if (Asturn):
 			Amoves += move 
 			#search over Amoves for win
@@ -48,7 +49,7 @@ while(game):
 			Bmoves += move 
 			#search over Bmoves for win 
 			#if found, set game to Flase
-		gameboard[move[0] + move[1]] = True 
+		gameboard[move[0]][move[1]] = True 
 		#space on gameboard is now filled 
 		Asturn = False
 		print(Bmoves)
@@ -57,3 +58,20 @@ while(game):
 	else:
 		print("that space already contains a pebble")
 
+
+
+def Find_Wins():
+	if Diagonals() or Rows() or Columns():
+		return True
+	else:
+		return False
+
+
+def Diagonals():
+	return True
+
+def Rows():
+	return True
+
+def Columns():
+	return True
