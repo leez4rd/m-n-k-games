@@ -25,31 +25,52 @@
 # check if next entry is consecutive to last, do this until its false
 # have a counter of how many times its true 
 
-m = 3
-n = 3
+m = 5
+n = 5
 Amoves = []
 Bmoves = []
-gameboard = [[False]*m]*n
+gameboard = [[' ']*m for _ in range(n)]
 print(gameboard)
 
 
 Asturn = True
 game = True 
 
+def display_board():
+	for i in range(m):
+		for j in range(n):
+			if gameboard[i][j] == 'X':
+				tile = 'X'
+			elif gameboard[i][j] == 'O':
+				tile = 'O'
+			else:
+				tile = ' '
+			print("|", tile, " |", sep ='', end ='')
+		print('\n', end='')
+	
+
+display_board()
+
+
 #issue: setting every array at same time
 while(game):
+
 	move = list(map(int, input("Enter a set of coordinates separated by a comma: ").split(',')))
 	print(gameboard)
+	display_board()
 	#if space is open...
-	if (gameboard[move[0]][move[1]] == False):
+	
+	if (gameboard[move[0]][move[1]] == ' '):
 		if (Asturn):
 			Amoves += move 
+			gameboard[move[0]][move[1]] = 'X' 
 			#search over Amoves for win
 		else:
 			Bmoves += move 
+			gameboard[move[0]][move[1]] = 'O' 
 			#search over Bmoves for win 
 			#if found, set game to Flase
-		gameboard[move[0]][move[1]] = True 
+		
 		#space on gameboard is now filled 
 		Asturn = False
 		print(Bmoves)
@@ -75,3 +96,10 @@ def Rows():
 
 def Columns():
 	return True
+
+
+# REMAINING TASKS:
+# 1 write functions to check each win condition
+# 2 make rudimentary GUI which displays gameboard tic-tac-toe style
+# 3 clean code and make project-grade
+# 4 make an AI to play
