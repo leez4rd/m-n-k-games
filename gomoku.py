@@ -1,3 +1,10 @@
+from vidstream import *
+import tkinter as tk 
+import socket
+import threading
+import requests 
+
+
 # m rows 
 # n columns
 
@@ -25,77 +32,199 @@
 # check if next entry is consecutive to last, do this until its false
 # have a counter of how many times its true 
 
-m = 5
-n = 5
-Amoves = []
-Bmoves = []
-gameboard = [[' ']*m for _ in range(n)]
-print(gameboard)
 
 
-Asturn = True
-game = True 
 
-def display_board():
-	for i in range(m):
-		for j in range(n):
-			if gameboard[i][j] == 'X':
-				tile = 'X'
-			elif gameboard[i][j] == 'O':
-				tile = 'O'
-			else:
-				tile = ' '
-			print("|", tile, " |", sep ='', end ='')
-		print('\n', end='')
+# important architectural decision:
+# do we want to track the evolution of a Board object to check wins
+# or do we want each player to keep track of their own moves so we can just iterate through array ? 
+
+class Board: 
+	def __init__(self, m, n, k):
+		rows = m 
+		columns = n
+		
+		# initialize empty gameboard 
+		gameboard = [[' ']*m for _ in range(n)]
+
+	# only works for two players right now 
+	def display_board(self):
+		for i in range(self.rows):
+			for j in range(self.columns):
+				if gameboard[i][j] == 'X':
+					tile = 'X'
+				elif gameboard[i][j] == 'O':
+					tile = 'O'
+				else:
+					tile = ' '
+				print("|", tile, " |", sep ='', end ='')
+			print('\n', end='')
+
+class Player:
+
+	def __init__(self, st):
+		name = st
+		moves = [] 
+
+
+class Game:
+
+	def __init__(self, rows, columns, k, *args):
+		m = rows
+		n = columns
+		victory_length = k
+		new_board = Board(rows, columns, k)
+		players = [p1-> Player , etc...]
+
+		moves = {}
+
+		# list of names
+		players = []
 	
+		# maybe add input checking to generate default names if none provided? 
+		# something like
+		if (len(args) == 0):
+			# default to two player 
+			players += ['Mario']
+			players += ['Wario']
+		else:
+			for arg in args:
+				players += [arg]
 
-display_board()
+		for player in players:
+			moves[player] = []
+
+		
+
+	
+	
+	def run_game():
+		# this only works for two players right now 
+		game_over = False 
+		Asturn = True
+
+		while not game_over:
+
+			move = list(map(int, input("Enter a set of coordinates separated by a comma: ").split(',')))
+			print(gameboard)
+			display_board()
+			#if space is open...
+			
+			if (gameboard[move[0]][move[1]] == ' '):
+				if (Asturn):
+					Amoves += move 
+					gameboard[move[0]][move[1]] = 'X' 
+					Asturn = False
+					#search over Amoves for win
+				else:
+					Bmoves += move 
+					gameboard[move[0]][move[1]] = 'O' 
+					Asturn = True
+					#search over Bmoves for win 
+					#if found, set game to Flase
+					
+				#space on gameboard is now filled 
+				
+				print(Bmoves)
+				print(Amoves)
+				#now it is B's turn
+			else:
+				print("that space already contains a pebble")
+
+
+	def find_wins(self):
+		if self.diagonals() or self.rows() or self.columns():
+			return True
+		else:
+			return False
+
+
+	def diagonals(self):
+		possible_wins = [] # maybe keep track of all groups of k - 1 to expedite this instead of checking each time
+		# then we only need to check which ones were previously one away from victory
+		# this will be unique for each player, so may be memory-intensive 
+
+		possible_win_num = len(self.current_player.moves) // self.k
+
+		# this should create a bunch of lists of possible win rows 
+		for i in range(len(possible_win_num)):
+			possible_win_rows += self.current_player.moves[i:i+k]
+
+		start = 0
+		while consecutive < self.k and start < len(possible_win_rows):
+
+			if possible_win_rows[start][0] + 1 == possible_win_rows[start + 1][0]:
+				if possible_win_rows[start][1] + 1 == possible_win_rows[start + 1][1]:
+					consecutive += 1
+			start += 1
+		if consecutive >= self.k:
+
+			return True # should I just set self.win = True or do that using return value from function ? 
+		else:
+			return False 
+		return True
+
+	'''
+	def rows(moves_list):
+		for el1, el2, el3 in moves_list:
+			return True
+	'''
+
+	# assuming each player has a list of moves that they have made 
+	def rows(self): # pass a Player object, or rely on internal referencing from game 
+		'''
+		for i, move in enumerate(player.moves):
+				moves[i] 
+		'''
+		possible_wins = [] # maybe keep track of all groups of k - 1 to expedite this instead of checking each time
+		# then we only need to check which ones were previously one away from victory
+		# this will be unique for each player, so may be memory-intensive 
+
+		possible_win_num = len(self.current_player.moves) // self.k
+
+		# this should create a bunch of lists of possible win rows 
+		for i in range(len(possible_win_num)):
+			possible_win_rows += self.current_player.moves[i:i+k][0]
+
+		start = 0
+		while consecutive < self.k and start < len(possible_win_rows):
+			if possible_win_rows[start] + 1 == possible_win_rows[start + 1]:
+				consecutive += 1
+			start += 1
+		if consecutive >= self.k:
+			return True # should I just set self.win = True or do that using return value from function ? 
+		else:
+			return False 
+
+	def columns(self):
+		# exact same thing as rows except for one character -- maybe combine functions 
+		'''
+		for i, move in enumerate(player.moves):
+				moves[i] 
+		'''
+		possible_wins = [] # maybe keep track of all groups of k - 1 to expedite this instead of checking each time
+		# then we only need to check which ones were previously one away from victory
+		# this will be unique for each player, so may be memory-intensive 
+
+		possible_win_num = len(self.current_player.moves) // self.k
+
+		# this should create a bunch of lists of possible win rows 
+		for i in range(len(possible_win_num)):
+			possible_win_rows += self.current_player.moves[i:i+k][1]
+
+		start = 0
+		while consecutive < self.k and start < len(possible_win_rows):
+			if possible_win_rows[start] + 1 == possible_win_rows[start + 1]:
+				consecutive += 1
+			start += 1
+		if consecutive >= self.k:
+			return True # should I just set self.win = True or do that using return value from function ? 
+		else:
+			return False 
 
 
 #issue: setting every array at same time
-while(game):
 
-	move = list(map(int, input("Enter a set of coordinates separated by a comma: ").split(',')))
-	print(gameboard)
-	display_board()
-	#if space is open...
-	
-	if (gameboard[move[0]][move[1]] == ' '):
-		if (Asturn):
-			Amoves += move 
-			gameboard[move[0]][move[1]] = 'X' 
-			#search over Amoves for win
-		else:
-			Bmoves += move 
-			gameboard[move[0]][move[1]] = 'O' 
-			#search over Bmoves for win 
-			#if found, set game to Flase
-		
-		#space on gameboard is now filled 
-		Asturn = False
-		print(Bmoves)
-		print(Amoves)
-		#now it is B's turn
-	else:
-		print("that space already contains a pebble")
-
-
-
-def Find_Wins():
-	if Diagonals() or Rows() or Columns():
-		return True
-	else:
-		return False
-
-
-def Diagonals():
-	return True
-
-def Rows():
-	return True
-
-def Columns():
-	return True
 
 
 # REMAINING TASKS:
@@ -103,3 +232,41 @@ def Columns():
 # 2 make rudimentary GUI which displays gameboard tic-tac-toe style
 # 3 clean code and make project-grade
 # 4 make an AI to play
+# 5 if i really wanna go wild... add gravity so it can also simulate connect four 
+
+
+
+
+
+
+
+
+
+def main():
+	tictactoe = game(3, 3, 3, "me", "you")
+	gomoku = game(10, 10, 5, "me", "you")
+
+	#GUI
+
+	# opens the application window
+	window = tk.Tk()
+	window.title("Tic Tac Toe (Engorged)")
+	window.geometry('500x400')
+
+	# label for the text box
+	label_target_ip = tk.Label(window, text="Target IP:")
+	label_target_ip.pack()
+
+	# text box for target IP
+	text_target_ip = tk.Text(window, height=1)
+	text_target_ip.pack()
+
+	# buttons
+	btn_listen = tk.Button(window, text = "Start Game", width=50, command = game.run_game())
+	btn_listen.pack(anchor = tk.CENTER, expand = True)
+
+	window.mainloop()
+
+
+if __name__ == '__main__':
+	main()
