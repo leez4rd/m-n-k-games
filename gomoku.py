@@ -3,7 +3,7 @@ import tkinter as tk
 import socket
 import threading
 import requests 
-
+import random 
 
 # m rows 
 # n columns
@@ -47,6 +47,9 @@ class Board:
 		# initialize empty gameboard 
 		gameboard = [[' ']*m for _ in range(n)]
 
+	def update_board(self, move, character):
+		gameboard[move[0]move[1]] = character 
+
 	# only works for two players right now 
 	def display_board(self):
 		for i in range(self.rows):
@@ -64,52 +67,65 @@ class Player:
 
 	def __init__(self, st):
 		name = st
+		x = random.randint(0, 1)
+		if x == 1:
+			char = 'X'
+		else:
+			char = 'O'
 		moves = [] 
+
+	def record_move(self, move):
+		self.moves += [move]
 
 
 class Game:
 
 	def __init__(self, rows, columns, k, *args):
+
 		m = rows
 		n = columns
 		victory_length = k
-		new_board = Board(rows, columns, k)
-		players = [p1-> Player , etc...]
-
+		gameboard = Board(rows, columns, k)
 		moves = {}
 
 		# list of names
-		players = []
-	
+		names = [args[i] for i in range(len(args))]
+		player_dict = {}
 		# maybe add input checking to generate default names if none provided? 
 		# something like
+
 		if (len(args) == 0):
 			# default to two player 
-			players += ['Mario']
-			players += ['Wario']
+			# P1 = Player('Mario')
+			# P2 = Player('Luigi')
+			# may need to do it this way...
+			player_dict['P1'] = Player('Mario')
+			player_dict['P2'] = Player('Luigi')
 		else:
-			for arg in args:
-				players += [arg]
+			# initialize players with names 
+			for i, name in enumerate(names):
+				pnum = 'P' + str(i + 1) 
+				# setattr(self, pnum, Player(name))
+				player_dict[pnum] = Player(name)
 
-		for player in players:
-			moves[player] = []
-
-		
-
+		current_player = player_dict['P1'] # might be problematic
 	
-	
-	def run_game():
-		# this only works for two players right now 
+	def run_game(self):
 		game_over = False 
-		Asturn = True
 
 		while not game_over:
-
+			# ask current player for a move 
+			gameboard.display_board()
 			move = list(map(int, input("Enter a set of coordinates separated by a comma: ").split(',')))
-			print(gameboard)
-			display_board()
+
+			if gameboard.gameboard[move[0]][moves[1]] == ' ':
+				self.current_player.record_move(move)
+				self.gameboard.update_board(move, current_player.char)
+				self.next_turn() # need a way to update player 
+			else:
+				print("That space already contains a pebble")
+			'''
 			#if space is open...
-			
 			if (gameboard[move[0]][move[1]] == ' '):
 				if (Asturn):
 					Amoves += move 
@@ -130,6 +146,13 @@ class Game:
 				#now it is B's turn
 			else:
 				print("that space already contains a pebble")
+			'''
+
+	def next_turn(self):
+		# how do we change players when the list of variable names for players is created dynamically?
+		# can we create a dynamic dictionary as well or instead? 	
+		# get key for value of current player, then add 1 to integer part of key to get new key
+		return 
 
 
 	def find_wins(self):
@@ -137,7 +160,6 @@ class Game:
 			return True
 		else:
 			return False
-
 
 	def diagonals(self):
 		possible_wins = [] # maybe keep track of all groups of k - 1 to expedite this instead of checking each time
