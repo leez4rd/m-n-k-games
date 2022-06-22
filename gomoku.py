@@ -4,6 +4,7 @@ import socket
 import threading
 import requests 
 import random 
+import pygame 
 
 # m rows 
 # n columns
@@ -80,13 +81,11 @@ class Board:
 
 class Player:
 
-	def __init__(self, st):
+	def __init__(self, st, charr):
 		self.name = st
+		# this is dumm
 		x = random.randint(0, 1)
-		if x == 1:
-			self.char = 'X'
-		else:
-			self.char = 'O'
+		self.char = charr
 		self.moves = [] 
 
 	def record_move(self, move):
@@ -97,6 +96,7 @@ class Game:
 
 	def __init__(self, rows, columns, k, *args):
 
+		SYMBOLS = ['X', 'O', 'Z'] # and so on
 		self.m = rows
 		self.n = columns
 		self.victory_length = k
@@ -116,14 +116,14 @@ class Game:
 			# P1 = Player('Mario')
 			# P2 = Player('Luigi')
 			# may need to do it this way...
-			self.player_dict['P1'] = Player('Mario')
-			self.player_dict['P2'] = Player('Luigi')
+			self.player_dict['P1'] = Player('Mario', 'X')
+			self.player_dict['P2'] = Player('Luigi', 'O')
 		else:
 			# initialize players with names 
 			for i, name in enumerate(self.names):
 				pnum = 'P' + str(i + 1) 
 				# setattr(self, pnum, Player(name))
-				self.player_dict[pnum] = Player(name)
+				self.player_dict[pnum] = Player(name, SYMBOLS[i])
 
 		self.current_player = self.player_dict['P1'] # might be problematic
 
@@ -141,10 +141,14 @@ class Game:
 				if self.turn_count == self.m * self.n: # careful of off by one errors here 
 					game_over = True 
 					winner = None 
+
+				# efficiency note: this should only check after min possible # of turns for win 
+				# additionally, we should track the number of k-1 rows to optimize 
+				# however, premature optimization is the root of all evil, so just gonna get it working first
 				if self.find_wins():
 					game_over = True 
 					winner = self.current_player
-				
+				print(self.current_player.name)
 				self.next_turn() # need a way to update player 
 
 			else:
@@ -215,6 +219,7 @@ class Game:
 			print(possible_win_rows)
 
 			# WHY DOES CHANGING THE INDEXING MAKE IT ONLY DISPLAY ONE SYMBOL !???
+			# this is a post hoc ergo propter hoc -- we were randomly initializing the symbols 
 			# does not work at edges... 
 			if start == possible_win_num:
 				return False # check this logic 
@@ -258,7 +263,11 @@ class Game:
 		start = 0
 		consecutive = 0
 		# PROBLEM: NEED TO CHECK EQUALITY IE THAT WE ARE IN SAME ROW OR WE WILL GET SPURIOUS WINS 
+		
 		while consecutive < self.victory_length and start < len(possible_win_rows):
+			
+			if start == possible_win_num:
+				return False
 			if possible_win_rows[start] + 1 == possible_win_rows[start + 1]:
 				consecutive += 1
 			else:
@@ -288,6 +297,8 @@ class Game:
 		start = 0
 		consecutive = 0
 		while consecutive < self.victory_length and start < len(possible_win_rows):
+			if start == possible_win_num:
+				return False
 			if possible_win_rows[start] + 1 == possible_win_rows[start + 1]:
 				consecutive += 1
 			else:
@@ -330,15 +341,57 @@ def main():
 	window.geometry('500x400')
 
 	# label for the text box
+	'''
 	label_target_ip = tk.Label(window, text="Target IP:")
 	label_target_ip.pack()
+
 
 	# text box for target IP
 	text_target_ip = tk.Text(window, height=1)
 	text_target_ip.pack()
-
+	'''
 	# buttons
-	btn_listen = tk.Button(window, text = "Start Game", width=50, command = gomoku.run_game())
+
+
+
+	# CODE STOLEN FROM CONNECT FOUR TUTORIAL 
+	pygame.init()
+	#define our screen size
+	SQUARESIZE = 100
+	BLUE = (0,0,255)
+	BLACK = (0,0,0)
+	RED = (255,0,0)
+	YELLOW = (255,255,0)
+	 
+	ROW_COUNT = 6
+	COLUMN_COUNT = 7
+	 
+	#define width and height of board
+	width = COLUMN_COUNT * SQUARESIZE
+	height = (ROW_COUNT+1) * SQUARESIZE
+	 
+	size = (width, height)
+	 
+	RADIUS = int(SQUARESIZE/2 - 5)
+	 
+	screen = pygame.display.set_mode(size)
+	
+	def draw_board():
+	    for c in range(COLUMN_COUNT):
+	        for r in range(ROW_COUNT):
+	            pygame.draw.rect(screen, BLUE, (c*SQUARESIZE, r*SQUARESIZE+SQUARESIZE, SQUARESIZE, SQUARESIZE))
+	            pygame.draw.circle(screen, BLACK, (int(c*SQUARESIZE+SQUARESIZE/2), int(r*SQUARESIZE+SQUARESIZE+SQUARESIZE/2)), RADIUS)
+	     
+	    for c in range(COLUMN_COUNT):
+	        for r in range(ROW_COUNT):      
+	            pygame.draw.circle(screen, RED, (int(c*SQUARESIZE+SQUARESIZE/2), height-int(r*SQUARESIZE+SQUARESIZE/2)), RADIUS) 
+	            pygame.draw.circle(screen, YELLOW, (int(c*SQUARESIZE+SQUARESIZE/2), height-int(r*SQUARESIZE+SQUARESIZE/2)), RADIUS)
+	    pygame.display.update()
+	draw_board()
+
+
+
+	btn_listen = tk.Button(window, text = "Start Game", width=50, command = gomoku.run_game)
 	btn_listen.pack(anchor = tk.CENTER, expand = True)
 
 	window.mainloop()
